@@ -39,10 +39,10 @@ void MyCircle2f(GLfloat centerx, GLfloat centery, GLfloat radius){
   glEnd();
 }
 
-GLfloat RadiusOfBall = 15.;
+GLfloat RadiusOfBall = 15.0f;
 // Draw the ball, centered at the origin
 void draw_ball() {
-  glColor3f(0.6,0.3,0.);
+  glColor3f(1.0,1.0,1.0); //blanco
   MyCircle2f(0.,0.,RadiusOfBall);
   
 }
@@ -55,35 +55,36 @@ void Display(void)
   //clear all pixels with the specified clear color
   glClear(GL_COLOR_BUFFER_BIT);
   // 160 is max X value in our world
-	// Define X position of the ball to be at center of window
-	xpos = 80.;
- 	
-	// Shape has hit the ground! Stop moving and start squashing down and then back up 
-	if (ypos == RadiusOfBall && ydir == -1  ) { 
-		sy = sy*squash ; 
-		
-		if (sy < 0.8)
-			// reached maximum suqash, now unsquash back up 
-			squash = 1.1;
-		else if (sy > 1.) {
-			// reset squash parameters and bounce ball back upwards
-			sy = 1.;
-			squash = 0.9;
-			ydir = 1;
-		}
-		sx = 1./sy;
-	} 
-	// 120 is max Y value in our world
-	// set Y position to increment 1.5 times the direction of the bounce
-	else {
-	ypos = ypos+ydir *1.5 - (1.-sy)*RadiusOfBall;
-	// If ball touches the top, change direction of ball downwards
-  	if (ypos == 120-RadiusOfBall)
-    	ydir = -1;
-	// If ball touches the bottom, change direction of ball upwards
-  	else if (ypos <RadiusOfBall)
-		ydir = 1;
-	}
+// Actualizar posición X
+    xpos = xpos + xdir * 1.5;
+    // Rebotar en los bordes laterales
+    if (xpos >= 640-RadiusOfBall) {
+        xdir = -1;
+    } else if (xpos <= RadiusOfBall) {
+        xdir = 1;
+    }
+    
+    // Shape has hit the ground! Stop moving and start squashing down and then back up 
+    if (ypos == RadiusOfBall && ydir == -1  ) { 
+        sy = sy*squash; 
+        if (sy < 0.8)
+            squash = 1.1;
+        else if (sy > 1.) {
+            sy = 1.;
+            squash = 0.9;
+            ydir = 1;
+        }
+        sx = 1./sy;
+    } 
+    else {
+        ypos = ypos+ydir *1.5 - (1.-sy)*RadiusOfBall;
+        // Rebotar en el techo
+        if (ypos >= 480-RadiusOfBall)
+            ydir = -1;
+        // Rebotar en el suelo
+        else if (ypos < RadiusOfBall)
+            ydir = 1;
+    }
   
 /*  //reset transformation state 
   glLoadIdentity();
