@@ -133,7 +133,7 @@ void reshape (int w, int h)
    glLoadIdentity ();
 
    // keep our logical coordinate system constant
-   gluOrtho2D(0.0, 160.0, 0.0, 120.0);
+   gluOrtho2D(0.0, 640.0, 0.0, 480.0);
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity ();
 
@@ -156,12 +156,12 @@ int main(int argc, char* argv[])
 
   glutInit( & argc, argv );
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-  glutInitWindowSize (320, 240);   
-  glutCreateWindow("Bouncing Ball");
+  glutInitWindowSize (640, 480);   
+  glutCreateWindow("Pong Game");
   init();
   glutDisplayFunc(Display);
   glutReshapeFunc(reshape);
   glutMainLoop();
 
-  return 1;
+  return 0;
 }
