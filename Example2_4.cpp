@@ -9,8 +9,8 @@
 
 double xpos, ypos, ydir, xdir;         // x and y position for house to be drawn
 // Paddle dimensions and positions
-float alturaPaleta = 80.0f;
-float anchoPaleta = 10.0f;
+float alturaPaleta = 90.0f;
+float anchoPaleta = 20.0f;
 float paletaIzquierdaY = 240.0f;   // Posición inicial para la paleta izquierda en Y
 float paletaDerechaY = 240.0f;  // Posición inicial para la paleta derecha en Y
 double sx, sy, squash;          // xy scale factors
@@ -42,7 +42,7 @@ void MyCircle2f(GLfloat centerx, GLfloat centery, GLfloat radius){
   glEnd();
 }
 
-GLfloat RadiusOfBall = 15.0f;
+GLfloat RadiusOfBall = 20.0f;
 // Draw the ball, centered at the origin
 void draw_ball() {
   glColor3f(1.0,1.0,1.0); //blanco
@@ -74,7 +74,20 @@ void display(void) {
   // Actualizar posición X
   xpos = xpos + xdir * 1.5;
   // Rebotar en los bordes laterales
-  if (xpos >= 640-RadiusOfBall) {
+// Colisión con paleta derecha
+  if (xpos >= (620 - anchoPaleta - RadiusOfBall) &&  //Verifica si la pelota está en la posición X de la paleta derecha
+      ypos >= (paletaDerechaY - alturaPaleta/2) && //Comprueba si la pelota está dentro del rango vertical de la paleta
+      ypos <= (paletaDerechaY + alturaPaleta/2)) { //Comprueba si la pelota está dentro del rango vertical de la paleta 
+      xdir = -1; //Invierte la dirección horizontal si hay colisión
+  }
+  // Colisión con paleta izquierda 
+  else if (xpos <= (20 + anchoPaleta + RadiusOfBall) && //Verifica si la pelota está en la posición X de la paleta izquierda  
+           ypos >= (paletaIzquierdaY - alturaPaleta/2) && //Comprueba si la pelota está dentro del rango vertical de la paleta
+           ypos <= (paletaIzquierdaY + alturaPaleta/2)) { //Comprueba si la pelota está dentro del rango vertical de la paleta
+      xdir = 1; //Invierte la dirección horizontal si hay colisión
+  }
+  // Colisión con bordes laterales (cuando no choca con ninguna paleta)
+  else if (xpos >= 640-RadiusOfBall) {
       xdir = -1;
   } else if (xpos <= RadiusOfBall) {
       xdir = 1;
@@ -140,21 +153,21 @@ void reshape (int w, int h)
 
 }
 void keyboard(unsigned char key, int x, int y) {
-    float velocidadPaleta = 12.0f;
+    float velocidadPaleta = 15.0f;
     switch(key) {
-        case 'a':  // Mover paleta izquierda arriba
+        case 'a':  // Mover paleta izquierda arriba, a porque queda comoda en posicion con la mano izquierda
             if(paletaIzquierdaY < 480 - alturaPaleta/2)
                 paletaIzquierdaY += velocidadPaleta;
             break;
-        case 'z':  // Mover paleta izquierda abajo
+        case 'z':  // Mover paleta izquierda abajo, z porque queda comoda en posicion con la mano izquierda
             if(paletaIzquierdaY > alturaPaleta/2)
                 paletaIzquierdaY -= velocidadPaleta;
             break;
-        case 'k':  // Mover paleta derecha arriba
+        case 'k':  // Mover paleta derecha arriba, k porque queda comoda en posicion con la mano derecha
             if(paletaDerechaY < 480 - alturaPaleta/2)
                 paletaDerechaY += velocidadPaleta;
             break;
-        case 'm':  // Mover paleta derecha abajo
+        case 'm':  // Mover paleta derecha abajo, m porque queda comoda en posicion con la mano derecha
             if(paletaDerechaY > alturaPaleta/2)
                 paletaDerechaY -= velocidadPaleta;
             break;
@@ -175,7 +188,7 @@ int main(int argc, char* argv[]) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
   glutInitWindowSize(640, 480);
   glutCreateWindow("Pong Game");
-  
+
   init();
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
