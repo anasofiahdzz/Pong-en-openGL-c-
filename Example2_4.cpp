@@ -99,7 +99,7 @@ xpos = xpos + xdir * 4.5;  // Aumentamos la velocidad horizontal
       float relativeIntersectY = (paletaIzquierdaY - ypos)/(alturaPaleta/2);
       ydir = -relativeIntersectY;
   }
-  // Colisión con bordes laterales (cuando no choca con ninguna paleta)
+
 // Colisión con bordes laterales (cuando no choca con ninguna paleta)
 else if (xpos >= 640-RadiusOfBall) {
       scoreLeft++; // Incrementar puntuación izquierda
