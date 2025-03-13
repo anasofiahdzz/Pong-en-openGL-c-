@@ -203,7 +203,7 @@ void keyboard(unsigned char key, int x, int y) {
 }
 void init(void) {
   //set the clear color to be white
-  glClearColor(0.0,0.8,0.0,1.0);
+  glClearColor(0.0,0.0,0.0,1.0);
   // initial position set to 0,0
 // initial position and direction
   xpos = 320; ypos = 240; // Comenzar en el centro
