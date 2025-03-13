@@ -1,13 +1,26 @@
 //Example2_4.cpp : A bouncing ball 
 
+#include <stdio.h>
 //#include <windows.h> //the windows include file, required by all windows applications
 #include <GL/glut.h> //the glut file for windows operations
                      // it also includes gl.h and glu.h for the openGL library calls
 #include <math.h>
 
+float xpos, ypos, xdir, ydir; // x and y position for house to be drawn
+
 #define PI 3.1415926535898 
 
-double xpos, ypos, ydir, xdir;         // x and y position for house to be drawn
+// Score variables
+int scoreLeft = 0;
+int scoreRight = 0;
+// Function to display text
+void renderBitmapString(float x, float y, void *font, const char *string) {
+    const char *c;
+    glRasterPos2f(x, y);
+    for (c = string; *c != '\0'; c++) {
+        glutBitmapCharacter(font, *c);
+    }
+}
 // Paddle dimensions and positions
 float alturaPaleta = 90.0f;
 float anchoPaleta = 20.0f;
@@ -27,9 +40,6 @@ GLfloat T[16] = {1.,0.,0.,0.,\
                  0.,0.,1.,0.,\
                  0.,0.,0.,1.};
 
-
-
-#define PI 3.1415926535898 
 GLint circle_points = 100; 
 void MyCircle2f(GLfloat centerx, GLfloat centery, GLfloat radius){
   GLint i;
@@ -65,32 +75,44 @@ void paletas() {
         glVertex2f(620 - anchoPaleta, paletaDerechaY + alturaPaleta/2);
     glEnd();
 }
+
 void display(void) {
-  // swap the buffers
-  glutSwapBuffers(); 
-  //clear all pixels with the specified clear color
-  glClear(GL_COLOR_BUFFER_BIT);
-  
-  // Actualizar posición X
-  xpos = xpos + xdir * 1.5;
-  // Rebotar en los bordes laterales
+    //clear all pixels with the specified clear color
+    glClear(GL_COLOR_BUFFER_BIT);
+xpos = xpos + xdir * 4.5;  // Aumentamos la velocidad horizontal
 // Colisión con paleta derecha
-  if (xpos >= (620 - anchoPaleta - RadiusOfBall) &&  //Verifica si la pelota está en la posición X de la paleta derecha
-      ypos >= (paletaDerechaY - alturaPaleta/2) && //Comprueba si la pelota está dentro del rango vertical de la paleta
-      ypos <= (paletaDerechaY + alturaPaleta/2)) { //Comprueba si la pelota está dentro del rango vertical de la paleta 
-      xdir = -1; //Invierte la dirección horizontal si hay colisión
+  if (xpos >= (620 - anchoPaleta - RadiusOfBall) &&  ////Verifica si la pelota está en la posición X de la paleta derecha
+      xpos <= (620 - RadiusOfBall) && //checa que la pelota no haya pasado el borde derecho de la paleta
+      ypos >= (paletaDerechaY - alturaPaleta/2 - RadiusOfBall) && //checa que la pelota está por encima del borde inferior de la paleta
+      ypos <= (paletaDerechaY + alturaPaleta/2 + RadiusOfBall)) { //checa si la pelota está por debajo del borde superior de la paleta
+      xdir = -1;
+      // Añadir variación al ángulo basado en dónde golpea la pelota
+      float relativeIntersectY = (paletaDerechaY - ypos)/(alturaPaleta/2);
+      ydir = -relativeIntersectY;
   }
   // Colisión con paleta izquierda 
-  else if (xpos <= (20 + anchoPaleta + RadiusOfBall) && //Verifica si la pelota está en la posición X de la paleta izquierda  
-           ypos >= (paletaIzquierdaY - alturaPaleta/2) && //Comprueba si la pelota está dentro del rango vertical de la paleta
-           ypos <= (paletaIzquierdaY + alturaPaleta/2)) { //Comprueba si la pelota está dentro del rango vertical de la paleta
-      xdir = 1; //Invierte la dirección horizontal si hay colisión
+  else if (xpos <= (20 + anchoPaleta + RadiusOfBall) && 
+           xpos >= (20 + RadiusOfBall) &&
+           ypos >= (paletaIzquierdaY - alturaPaleta/2 - RadiusOfBall) && 
+           ypos <= (paletaIzquierdaY + alturaPaleta/2 + RadiusOfBall)) { 
+      xdir = 1;
+      float relativeIntersectY = (paletaIzquierdaY - ypos)/(alturaPaleta/2);
+      ydir = -relativeIntersectY;
   }
   // Colisión con bordes laterales (cuando no choca con ninguna paleta)
-  else if (xpos >= 640-RadiusOfBall) {
-      xdir = -1;
+// Colisión con bordes laterales (cuando no choca con ninguna paleta)
+else if (xpos >= 640-RadiusOfBall) {
+      scoreLeft++; // Incrementar puntuación izquierda
+      xpos = 320; // Reset ball position to center
+      ypos = 240;
+      xdir = -1; // Start moving towards left player
+      ydir = (float)(rand() % 100 - 50) / 100.0f; // Dirección Y aleatoria
   } else if (xpos <= RadiusOfBall) {
-      xdir = 1;
+      scoreRight++; // Incrementar puntuación derecha
+      xpos = 320; // Reset ball position to center
+      ypos = 240;
+      xdir = 1; // Start moving towards right player
+      ydir = (float)(rand() % 100 - 50) / 100.0f; // Dirección Y aleatoria
   }
   
   // Shape has hit the ground! Stop moving and start squashing down and then back up 
@@ -106,8 +128,7 @@ void display(void) {
       sx = 1./sy;
   } 
   else {
-      ypos = ypos+ydir *1.5 - (1.-sy)*RadiusOfBall;
-      // Rebotar en el techo
+ypos = ypos + ydir * 4.5;  // Aumentamos la velocidad vertical
       if (ypos >= 480-RadiusOfBall)
           ydir = -1;
       // Rebotar en el suelo
@@ -135,25 +156,31 @@ void display(void) {
   glLoadIdentity();
   paletas();
   
-  glutPostRedisplay();
+  // Display scores
+  glColor3f(1.0, 1.0, 1.0); // White color for text
+  char scoreStr[32];
+  sprintf(scoreStr, "%d", scoreLeft);
+  renderBitmapString(220, 440, GLUT_BITMAP_HELVETICA_18, scoreStr);
+  sprintf(scoreStr, "%d", scoreRight);
+  renderBitmapString(400, 440, GLUT_BITMAP_HELVETICA_18, scoreStr);
+  
+glutSwapBuffers();
 }
-
-
-void reshape (int w, int h)
-{
-   // on reshape and on startup, keep the viewport to be the entire size of the window
-   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
-   glMatrixMode (GL_PROJECTION);
-   glLoadIdentity ();
-
-   // keep our logical coordinate system constant
-   gluOrtho2D(0.0, 640.0, 0.0, 480.0);
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity ();
-
+void timer(int value) {
+    glutPostRedisplay();
+    glutTimerFunc(16, timer, 0);  // 60 FPS aproximadamente (1000ms/60 ≈ 16ms)
+}
+void reshape(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    // keep our logical coordinate system constant
+    gluOrtho2D(0.0, 640.0, 0.0, 480.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 void keyboard(unsigned char key, int x, int y) {
-    float velocidadPaleta = 15.0f;
+    float velocidadPaleta = 50.0f;
     switch(key) {
         case 'a':  // Mover paleta izquierda arriba, a porque queda comoda en posicion con la mano izquierda
             if(paletaIzquierdaY < 480 - alturaPaleta/2)
@@ -178,21 +205,23 @@ void init(void) {
   //set the clear color to be white
   glClearColor(0.0,0.8,0.0,1.0);
   // initial position set to 0,0
-  xpos = 60; ypos = RadiusOfBall; xdir = 1; ydir = 1;
+// initial position and direction
+  xpos = 320; ypos = 240; // Comenzar en el centro
+  xdir = (rand() % 2) * 2 - 1; // Dirección inicial aleatoria (-1 o 1)
+  ydir = (rand() % 2) * 2 - 1;
   sx = 1.; sy = 1.; squash = 0.9;
 }
 
-
 int main(int argc, char* argv[]) {
-  glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-  glutInitWindowSize(640, 480);
-  glutCreateWindow("Pong Game");
-
-  init();
-  glutDisplayFunc(display);
-  glutReshapeFunc(reshape);
-  glutKeyboardFunc(keyboard);
-  glutMainLoop();
-  return 0;
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitWindowSize(640, 480);
+    glutCreateWindow("Pong Game");
+    init();
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
+    glutTimerFunc(0, timer, 0);  // Iniciar el timer inmediatamente
+    glutMainLoop();
+    return 0;
 }
