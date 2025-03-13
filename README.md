@@ -11,9 +11,9 @@ Para compilar y ejecutar:
 - GLUT
 ## Instalación (necesario para Fedora)
 1. Instala las dependencias necesarias:
--sudo dnf install freeglut-devel
--sudo dnf5 install '@development-tools' (herramientas de desarrollo)
--sudo dnf5 install gcc-c++ freeglut-devel (bibliotecas específicas)
+- sudo dnf install freeglut-devel
+- sudo dnf5 install '@development-tools' (herramientas de desarrollo)
+- sudo dnf5 install gcc-c++ freeglut-devel (bibliotecas específicas)
 2. Compilación:
 g++ -o openGL Example2_4.cpp -lGL -lGLU -lglut -lm
 3. Ejecición:
